@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copa Mundial 2026 - Resultados en Vivo</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;700;800;900&family=Hanken+Grotesk:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00342b",
+                        "primary-container": "#004d40",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#7ebdac",
+                        "secondary": "#416900",
+                        "secondary-container": "#9ff700",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#446e00",
+                        "secondary-fixed": "#a1fb00",
+                        "tertiary": "#3d2a00",
+                        "tertiary-fixed": "#ffdea5",
+                        "surface": "#fcf9f8",
+                        "surface-container": "#f0edec",
+                        "on-surface": "#1c1b1b",
+                        "on-surface-variant": "#3f4945",
+                        "outline": "#707975",
+                        "outline-variant": "#bfc9c4",
+                        "inverse-surface": "#313030",
+                        "background": "#fcf9f8",
+                        "error": "#ba1a1a",
+                    },
+                    fontFamily: {
+                        "headline": ["Chivo"],
+                        "body": ["Hanken Grotesk"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(31, 41, 35, 0.1);
+        }
+        
+        .loading {
+            background: linear-gradient(90deg, #f0edec 25%, #e5e2e1 50%, #f0edec 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .live-badge {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        ::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #004d40;
+            border-radius: 10px;
+        }
+
+        .flag-emoji {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+    <div class="w-full">
+        <!-- Header -->
+        <header class="bg-primary text-on-primary shadow-lg sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-4xl font-black font-headline">⚽ Copa Mundial 2026</h1>
+                        <p class="text-on-primary/70 font-body mt-1">Resultados en Vivo • Datos en Tiempo Real</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="flex items-center gap-2 justify-end mb-2">
+                            <span class="w-2 h-2 bg-secondary-fixed rounded-full live-badge"></span>
+                            <span class="text-sm font-body">EN VIVO</span>
+                        </div>
+                        <p class="text-xs font-body text-on-primary/60" id="last-update">Actualizando...</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <div class="sticky top-16 z-30 bg-surface border-b border-outline-variant">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex gap-1 overflow-x-auto">
+                    <button onclick="showTab('matches')" class="tab-btn active px-4 py-3 font-headline font-bold text-sm uppercase tracking-wider border-b-2 border-primary text-primary whitespace-nowrap">
+                        <span class="material-symbols-outlined align-text-bottom mr-1">sports_soccer</span> Partidos
+                    </button>
+                    <button onclick="showTab('groups')" class="tab-btn px-4 py-3 font-headline font-bold text-sm uppercase tracking-wider border-b-2 border-transparent text-on-surface/60 hover:text-primary whitespace-nowrap">
+                        <span class="material-symbols-outlined align-text-bottom mr-1">grid_3x3</span> Grupos
+                    </button>
+                    <button onclick="showTab('standings')" class="tab-btn px-4 py-3 font-headline font-bold text-sm uppercase tracking-wider border-b-2 border-transparent text-on-surface/60 hover:text-primary whitespace-nowrap">
+                        <span class="material-symbols-outlined align-text-bottom mr-1">bar_chart</span> Clasificación
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- MATCHES TAB -->
+            <div id="matches-tab" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-headline font-bold text-primary mb-4">Últimos Partidos</h2>
+                    <div id="matches-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="loading h-32 rounded-lg"></div>
+                        <div class="loading h-32 rounded-lg"></div>
+                        <div class="loading h-32 rounded-lg"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-headline font-bold text-primary mb-4">Próximos Partidos</h2>
+                    <div id="upcoming-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="loading h-32 rounded-lg"></div>
+                        <div class="loading h-32 rounded-lg"></div>
+                        <div class="loading h-32 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GROUPS TAB -->
+            <div id="groups-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-headline font-bold text-primary mb-6">Grupos del Torneo</h2>
+                <div id="groups-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="loading h-64 rounded-lg"></div>
+                    <div class="loading h-64 rounded-lg"></div>
+                    <div class="loading h-64 rounded-lg"></div>
+                </div>
+            </div>
+
+            <!-- STANDINGS TAB -->
+            <div id="standings-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-headline font-bold text-primary mb-6">Clasificación por Grupos</h2>
+                <div id="standings-container" class="space-y-6">
+                    <div class="loading h-40 rounded-lg"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-primary-container text-on-primary border-t border-on-primary/10 mt-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div>
+                        <h4 class="font-headline font-bold mb-3">Sobre el Torneo</h4>
+                        <ul class="space-y-2 text-sm text-on-primary/80 font-body">
+                            <li>📅 11 de junio - 19 de julio 2026</li>
+                            <li>🌎 USA, México, Canadá</li>
+                            <li>⚽ 48 equipos • 12 grupos</li>
+                            <li>🏆 104 partidos totales</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-headline font-bold mb-3">Fuente de Datos</h4>
+                        <ul class="space-y-2 text-sm text-on-primary/80 font-body">
+                            <li>✓ API: worldcup26.ir</li>
+                            <li>✓ Gratuita y sin limitaciones</li>
+                            <li>✓ Código abierto</li>
+                            <li>✓ Actualización automática</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-headline font-bold mb-3">Actualización</h4>
+                        <p class="text-sm text-on-primary/80 font-body mb-2">Datos actualizados en tiempo real</p>
+                        <p class="text-xs text-on-primary/60">Próxima actualización: <span id="next-update">en breve</span></p>
+                    </div>
+                </div>
+                <div class="border-t border-on-primary/20 pt-6">
+                    <p class="text-center text-sm text-on-primary/60 font-body">Copa Mundial FIFA 2026 • Visualizador de Resultados en Vivo</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE = 'https://worldcup26.ir/get';
+        let allMatches = [];
+        let allTeams = {};
+        let updateInterval;
+
+        // Crear tarjeta de partido
+        function createMatchCard(match) {
+            const card = document.createElement('div');
+            card.className = 'glass-card rounded-xl p-4 hover:shadow-lg transition-all';
+            
+            const status = (match.status || '').toLowerCase();
+            const isFinished = status === 'finished' || status === 'completed' || status === 'ft' || status === 'ended';
+            const isLive = status === 'live' || status === 'in_play' || status === 'inprogress' || status === 'running';
+            
+            // Normalizar nombres de equipo — la API puede usar distintos campos
+            const homeName = match.home_team?.name || match.home?.name || match.home_team_name || match.home || 'TBD';
+            const awayName = match.away_team?.name || match.away?.name || match.away_team_name || match.away || 'TBD';
+
+            // Goles: pueden estar en home_team.goals, home_score, score.home, etc.
+            const homeGoals = match.home_team?.goals ?? match.home_score ?? match.score?.home ?? match.result?.home ?? null;
+            const awayGoals = match.away_team?.goals ?? match.away_score ?? match.score?.away ?? match.result?.away ?? null;
+
+            const homeFlag = getCountryFlag(homeName);
+            const awayFlag = getCountryFlag(awayName);
+            
+            let statusText = 'Próximo';
+            let statusColor = 'text-on-surface/60';
+            
+            if (isLive) {
+                statusText = '🔴 EN VIVO';
+                statusColor = 'text-error animate-pulse';
+            } else if (isFinished) {
+                statusText = 'Finalizado';
+                statusColor = 'text-on-surface/60';
+            }
+
+            const showScore = isFinished || isLive;
+            const homeDisplay = showScore && homeGoals !== null ? homeGoals : '-';
+            const awayDisplay = showScore && awayGoals !== null ? awayGoals : '-';
+            const scoreColor  = showScore ? 'text-secondary-fixed' : 'text-on-surface/40';
+
+            // Fecha
+            const dateRaw = match.datetime || match.date || match.kickoff || match.match_time || null;
+            const dateStr = dateRaw
+                ? new Date(dateRaw).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : 'Fecha TBD';
+
+            const stage = match.stage || match.group || match.round || 'Grupo';
+            
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant">
+                    <span class="text-xs font-bold uppercase tracking-wider text-on-surface/60 font-body">${stage}</span>
+                    <span class="text-xs font-bold ${statusColor} font-body">${statusText}</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-1">
+                            <span class="flag-emoji">${homeFlag}</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold font-headline text-sm truncate">${homeName}</p>
+                            </div>
+                        </div>
+                        <span class="font-black font-headline text-2xl ml-2 ${scoreColor}">${homeDisplay}</span>
+                    </div>
+                    <div class="h-px bg-outline-variant"></div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-1">
+                            <span class="flag-emoji">${awayFlag}</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold font-headline text-sm truncate">${awayName}</p>
+                            </div>
+                        </div>
+                        <span class="font-black font-headline text-2xl ml-2 ${scoreColor}">${awayDisplay}</span>
+                    </div>
+                </div>
+                <p class="text-xs text-on-surface/50 mt-3 font-body">${dateStr}</p>
+            `;
+            
+            return card;
+        }
+
+        // Obtener bandera de país por nombre (español e inglés)
+        function getCountryFlag(countryName) {
+            const flags = {
+                // English names (as returned by API)
+                'Belgium': '🇧🇪', 'Brazil': '🇧🇷', 'Canada': '🇨🇦', 'Qatar': '🇶🇦',
+                'Czech Republic': '🇨🇿', 'Czechia': '🇨🇿', 'South Korea': '🇰🇷',
+                'Ivory Coast': '🇨🇮', "Côte d'Ivoire": '🇨🇮', 'Curacao': '🇨🇼',
+                'Denmark': '🇩🇰', 'Egypt': '🇪🇬', 'United Arab Emirates': '🇦🇪',
+                'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Slovakia': '🇸🇰', 'Spain': '🇪🇸',
+                'United States': '🇺🇸', 'USA': '🇺🇸', 'France': '🇫🇷', 'Germany': '🇩🇪',
+                'Ghana': '🇬🇭', 'Haiti': '🇭🇹', 'Hungary': '🇭🇺', 'Iraq': '🇮🇶',
+                'Iran': '🇮🇷', 'Italy': '🇮🇹', 'Japan': '🇯🇵', 'Jordan': '🇯🇴',
+                'Morocco': '🇲🇦', 'Mexico': '🇲🇽', 'New Zealand': '🇳🇿', 'Netherlands': '🇳🇱',
+                'Paraguay': '🇵🇾', 'Poland': '🇵🇱', 'Romania': '🇷🇴', 'Russia': '🇷🇺',
+                'Senegal': '🇸🇳', 'South Africa': '🇿🇦', 'Sweden': '🇸🇪', 'Switzerland': '🇨🇭',
+                'Thailand': '🇹🇭', 'Tunisia': '🇹🇳', 'Turkey': '🇹🇷', 'Ukraine': '🇺🇦',
+                'Uruguay': '🇺🇾', 'Uzbekistan': '🇺🇿', 'Vietnam': '🇻🇳', 'Norway': '🇳🇴',
+                'Saudi Arabia': '🇸🇦', 'Cape Verde': '🇨🇻', 'Colombia': '🇨🇴', 'Chile': '🇨🇱',
+                'Peru': '🇵🇪', 'Venezuela': '🇻🇪', 'Bolivia': '🇧🇴', 'Costa Rica': '🇨🇷',
+                'Honduras': '🇭🇳', 'Guatemala': '🇬🇹', 'Panama': '🇵🇦', 'Jamaica': '🇯🇲',
+                'Portugal': '🇵🇹', 'Serbia': '🇷🇸', 'Wales': '🏴󠁧󠁢󠁷󠁬󠁳󠁿', 'Nigeria': '🇳🇬',
+                'Cameroon': '🇨🇲', 'Algeria': '🇩🇿', 'Argentina': '🇦🇷', 'Australia': '🇦🇺',
+                'Austria': '🇦🇹', 'Ecuador': '🇪🇨', 'El Salvador': '🇸🇻', 'Cuba': '🇨🇺',
+                'Trinidad and Tobago': '🇹🇹', 'Lebanon': '🇱🇧', 'Kuwait': '🇰🇼',
+                'Bahrain': '🇧🇭', 'Oman': '🇴🇲', 'Palestine': '🇵🇸', 'India': '🇮🇳',
+                'China': '🇨🇳', 'Indonesia': '🇮🇩', 'Philippines': '🇵🇭',
+                // Spanish names
+                'Bélgica': '🇧🇪', 'Brasil': '🇧🇷', 'Canadá': '🇨🇦', 'Catar': '🇶🇦',
+                'Chequia': '🇨🇿', 'Corea del Sur': '🇰🇷', 'Costa de Marfil': '🇨🇮',
+                'Dinamarca': '🇩🇰', 'Egipto': '🇪🇬', 'Emiratos Árabes': '🇦🇪',
+                'Inglaterra': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Escocia': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Eslovaquia': '🇸🇰', 'España': '🇪🇸',
+                'Estados Unidos': '🇺🇸', 'Francia': '🇫🇷', 'Alemania': '🇩🇪',
+                'Haití': '🇭🇹', 'Hungría': '🇭🇺', 'Irak': '🇮🇶', 'Irán': '🇮🇷', 'Italia': '🇮🇹',
+                'Japón': '🇯🇵', 'Jordania': '🇯🇴', 'Marruecos': '🇲🇦', 'México': '🇲🇽',
+                'Nueva Zelanda': '🇳🇿', 'Países Bajos': '🇳🇱', 'Polonia': '🇵🇱',
+                'Rumania': '🇷🇴', 'Rusia': '🇷🇺', 'Sudáfrica': '🇿🇦', 'Suecia': '🇸🇪',
+                'Suiza': '🇨🇭', 'Tailandia': '🇹🇭', 'Túnez': '🇹🇳', 'Turquía': '🇹🇷',
+                'Ucrania': '🇺🇦', 'Uzbekistán': '🇺🇿', 'Noruega': '🇳🇴',
+                'Arabia Saudita': '🇸🇦', 'Cabo Verde': '🇨🇻', 'Perú': '🇵🇪',
+                'Panamá': '🇵🇦', 'China': '🇨🇳',
+                'Bosnia and Herzegovina': '🇧🇦', 'Curazao': '🇨🇼', 'Ghana': '🇬🇭',
+                'Paraguay': '🇵🇾', 'Uruguay': '🇺🇾', 'Vietnam': '🇻🇳',
+            };
+            return flags[countryName] || '⚽';
+        }
+
+        // Mostrar tabs
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-primary', 'text-primary');
+                el.classList.add('border-transparent', 'text-on-surface/60');
+            });
+
+            document.getElementById(tab + '-tab').classList.remove('hidden');
+            event.target.closest('.tab-btn').classList.add('border-primary', 'text-primary');
+            event.target.closest('.tab-btn').classList.remove('border-transparent', 'text-on-surface/60');
+        }
+
+        // Normalizar respuesta a array — maneja cualquier forma que devuelva la API
+        function toArray(data) {
+            if (Array.isArray(data)) return data;
+            if (data && typeof data === 'object') {
+                // Buscar la primera propiedad que sea un array
+                for (const key of Object.keys(data)) {
+                    if (Array.isArray(data[key])) return data[key];
+                }
+            }
+            return [];
+        }
+
+        // Obtener datos de la API
+        async function fetchTournamentData() {
+            try {
+                const [matchesRes, teamsRes, groupsRes] = await Promise.all([
+                    fetch(`${API_BASE}/games`),
+                    fetch(`${API_BASE}/teams`),
+                    fetch(`${API_BASE}/groups`)
+                ]);
+
+                const matchesRaw = await matchesRes.json();
+                const teamsRaw  = await teamsRes.json();
+                const groupsRaw = await groupsRes.json();
+
+                const matches = toArray(matchesRaw);
+                const groups  = toArray(groupsRaw);
+
+                // teams puede venir como array o como objeto {nombre: {...}}
+                allTeams = Array.isArray(teamsRaw)
+                    ? teamsRaw.reduce((acc, t) => { acc[t.name] = t; return acc; }, {})
+                    : (teamsRaw && typeof teamsRaw === 'object' && !Array.isArray(teamsRaw)
+                        ? teamsRaw
+                        : {});
+
+                allMatches = matches;
+
+                renderMatches(matches);
+                renderGroups(groups);
+                renderStandings(groups);
+                updateTimestamp();
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showApiError();
+                setTimeout(fetchTournamentData, 10000);
+            }
+        }
+
+        // Mostrar mensaje de error amigable en todos los contenedores
+        function showApiError() {
+            const errHtml = '<p class="col-span-full text-center text-error font-body py-8">⚠️ No se pudieron cargar los datos. Reintentando...</p>';
+            ['matches-container', 'upcoming-container', 'groups-container', 'standings-container'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = errHtml;
+            });
+        }
+
+        // Renderizar partidos
+        function renderMatches(matches) {
+            const matchesContainer = document.getElementById('matches-container');
+            const upcomingContainer = document.getElementById('upcoming-container');
+            
+            matchesContainer.innerHTML = '';
+            upcomingContainer.innerHTML = '';
+
+            const finished = matches.filter(m => {
+                const s = (m.status || '').toLowerCase();
+                return s === 'finished' || s === 'completed' || s === 'ft' || s === 'ended';
+            }).slice(0, 6);
+            const upcoming = matches.filter(m => {
+                const s = (m.status || '').toLowerCase();
+                return s !== 'finished' && s !== 'completed' && s !== 'ft' && s !== 'ended';
+            }).slice(0, 6);
+
+            if (finished.length === 0) {
+                matchesContainer.innerHTML = '<p class="col-span-full text-center text-on-surface/60 font-body">Sin partidos finalizados aún</p>';
+            } else {
+                finished.forEach(match => {
+                    matchesContainer.appendChild(createMatchCard(match));
+                });
+            }
+
+            if (upcoming.length === 0) {
+                upcomingContainer.innerHTML = '<p class="col-span-full text-center text-on-surface/60 font-body">Sin partidos próximos</p>';
+            } else {
+                upcoming.forEach(match => {
+                    upcomingContainer.appendChild(createMatchCard(match));
+                });
+            }
+        }
+
+        // Renderizar grupos
+        function renderGroups(groups) {
+            const container = document.getElementById('groups-container');
+            container.innerHTML = '';
+
+            if (!Array.isArray(groups) || groups.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-on-surface/60 font-body">Cargando información de grupos...</p>';
+                return;
+            }
+
+            groups.forEach(group => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-6 border border-outline-variant';
+                
+                let html = `
+                    <div class="mb-4">
+                        <h3 class="text-2xl font-black font-headline text-primary">${group.letter ? 'Grupo ' + group.letter : (group.name || group.group_name || 'Grupo')}</h3>
+                    </div>
+                    <div class="space-y-2">
+                `;
+
+                const teams = group.teams || group.standings || [];
+                if (Array.isArray(teams)) {
+                    teams.forEach((team) => {
+                        const name = team.name || team.team_name || team.team || '?';
+                        const flag = getCountryFlag(name);
+                        html += `
+                            <div class="flex items-center gap-3 p-3 bg-surface rounded-lg hover:bg-secondary-fixed/10 transition">
+                                <span class="flag-emoji">${flag}</span>
+                                <div class="flex-1">
+                                    <p class="font-bold font-body text-sm">${name}</p>
+                                </div>
+                                <span class="text-xs bg-surface-container px-2 py-1 rounded font-bold text-tertiary">${team.played || team.games_played || team.mp || 0}PJ</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                html += `</div>`;
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        // Renderizar clasificación
+        function renderStandings(groups) {
+            const container = document.getElementById('standings-container');
+            container.innerHTML = '';
+
+            if (!Array.isArray(groups) || groups.length === 0) {
+                container.innerHTML = '<p class="col-span-full text-center text-on-surface/60 font-body">Cargando clasificaciones...</p>';
+                return;
+            }
+
+            groups.forEach(group => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-6 border border-outline-variant overflow-hidden';
+                
+                let html = `
+                    <h3 class="text-xl font-bold font-headline text-primary mb-4">${group.letter ? 'Grupo ' + group.letter : (group.name || group.group_name || 'Grupo')}</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full font-body text-sm">
+                            <thead>
+                                <tr class="border-b border-outline-variant">
+                                    <th class="text-left p-2">Equipo</th>
+                                    <th class="text-center p-2">PJ</th>
+                                    <th class="text-center p-2">G</th>
+                                    <th class="text-center p-2">E</th>
+                                    <th class="text-center p-2">P</th>
+                                    <th class="text-center p-2">GD</th>
+                                    <th class="text-center p-2 font-bold">Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                const teams = group.teams || group.standings || [];
+                if (Array.isArray(teams)) {
+                    teams.forEach((team, idx) => {
+                        const name = team.name || team.team_name || team.team || '?';
+                        const flag = getCountryFlag(name);
+                        const position = idx + 1;
+                        const bgColor = position <= 2 ? 'bg-secondary-fixed/10' : '';
+                        const played  = team.played  ?? team.games_played ?? team.mp ?? 0;
+                        const wins    = team.wins    ?? team.w  ?? 0;
+                        const draws   = team.draws   ?? team.d  ?? 0;
+                        const losses  = team.losses  ?? team.l  ?? 0;
+                        const gf      = team.goals_for     ?? team.gf ?? team.goals_scored  ?? 0;
+                        const ga      = team.goals_against ?? team.ga ?? team.goals_conceded ?? 0;
+                        const pts     = team.points  ?? team.pts ?? (wins * 3 + draws);
+                        
+                        html += `
+                            <tr class="border-b border-outline-variant/50 ${bgColor}">
+                                <td class="p-2"><span class="mr-2">${flag}</span>${name}</td>
+                                <td class="text-center p-2">${played}</td>
+                                <td class="text-center p-2">${wins}</td>
+                                <td class="text-center p-2">${draws}</td>
+                                <td class="text-center p-2">${losses}</td>
+                                <td class="text-center p-2">${gf - ga}</td>
+                                <td class="text-center p-2 font-bold text-secondary-fixed">${pts}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                html += `</tbody></table></div>`;
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        // Actualizar timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('last-update').textContent = timeStr;
+
+            const nextUpdate = new Date(now.getTime() + 5 * 60000);
+            const nextTimeStr = nextUpdate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('next-update').textContent = nextTimeStr;
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchTournamentData();
+            
+            // Actualizar cada 5 minutos
+            updateInterval = setInterval(fetchTournamentData, 5 * 60000);
+        });
+
+        // Material icons setup
+        const style = document.createElement('style');
+        style.textContent = `.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48; }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
